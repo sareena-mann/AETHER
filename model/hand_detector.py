@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # a collection of 11,076 hand images (1600 x 1200 pixels)
 # First task: reduce pixel size to say 512 x 512
-data = pd.read_csv('HandInfo.csv')
+data = pd.read_csv('HandInfo.csv') # CHANGE
 data = np.array(data)
 m, n = data.shape
 np.random.shuffle(data) # shuffle before splitting into dev and training sets
