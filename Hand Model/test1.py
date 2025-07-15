@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Set the base directory containing subfolders like "yes", "no", etc.
-base_dir = "/Users/japjot/aether/AETHER/model/datasets"  # change this to your directory path
+base_dir = "/Users/japjot/aether/AETHER/Hand Model/datasets"  # change this to your directory path
 
 # Valid image extensions
 image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.gif')

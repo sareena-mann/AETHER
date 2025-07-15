@@ -14,7 +14,7 @@ win_name = 'Laptop Camera Input'
 #WINDOW_NORMAL: resizable by user, change to WINDOW_AUTOSIZE?
 cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
-#Instantiate mp Hands model
+#Instantiate mp Hands Hand Model
 with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5, max_num_hands=1) as hands:
     while cv2.waitKey(1) != 27: # Escape key
         has_frame, frame = source.read()
