@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
+
+
+input_file = "AETHER/model/dataset"  # Replace with the actual path to your label file
+output_file = "path/to/your/modified_labels.csv"
 
 # a collection of 11,076 hand images (1600 x 1200 pixels)
 # First task: reduce pixel size to say 512 x 512
