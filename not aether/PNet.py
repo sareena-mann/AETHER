@@ -1,38 +1,18 @@
 import tensorflow as tf
 
-#from tensorflow.keras import layers, models
-
 """
     PNet is the first layer
     INPUT: image of any size
     OUTPUT: (1) Facial score (2) coordinates of a bounding box
 
+    Conv1 + PReLU1 + MaxPool1: Extracts low-level features and downsamples.
+    Conv2 + PReLU2: Extracts mid-level features.
+    Conv3 + PReLU3: Extracts high-level features.
+    Conv4_1: Outputs bounding box regressions (4 values per location).
+    Conv4_2: Outputs classification scores (2 values per location).
 """
 
 L = tf.keras.Layers
-
-"""
-keras.layers.Conv2D(
-    filters,
-    kernel_size,
-    strides=(1, 1),
-    padding="valid",
-    data_format=None,
-    dilation_rate=(1, 1),
-    groups=1,
-    activation=None,
-    use_bias=True,
-    kernel_initializer="glorot_uniform",
-    bias_initializer="zeros",
-    kernel_regularizer=None,
-    bias_regularizer=None,
-    activity_regularizer=None,
-    kernel_constraint=None,
-    bias_constraint=None,
-    **kwargs
-)
-
-"""
 
 class PNet(tf.keras.Model):
 
@@ -42,9 +22,19 @@ class PNet(tf.keras.Model):
 
         #LAYERS
         #Applies 10 different filters to the 3x3 kernel space, kernel moves 1 pixel in each direction, filters are randomly initialized
+        #output size = input size - kernel size + 1
+        # The conv1 layer in PNet extracts 10 low-level feature maps using 3x3 kernels, focusing on edges, textures, and simple patterns in the input image. Low-level visual info
         self.conv1 = L.Conv2D(10, kernel_size=(3,3), strides=(1,1), padding="valid", activation="linear", name="conv1")
         self.prelu1 = L.PReLU(shared_axes=[1, 2], name="prelu1")
-        self.maxpool1 = L.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="same", name="maxpooling1")
 
+        # Downsamples the feature map, reducing spatial dimensions while retaining important features, making the network
+        # more robust to translations and reducing computation.
+        self.maxpool1 = L.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="same", name="maxpooling1")
+        self.conv2 = L.Conv2D(16, kernel_size=(3,3), strides=(1,1), padding="valid", activation="linear", name="conv2")
+        self.prelu2 = L.PReLU(shared_axes=[1, 2], name="prelu2")
+        self.conv3 = L.Conv2D(32, kernel_size=(3,3), strides=(1,1), padding="valid", activation="linear", name="conv3")
+        self.prelu3 = L.PReLU(shared_axes=[1, 2], name="prelu3")
+        self.conv4_1 = L.Conv2D(4, kernel_size=(1, 1), strides=(1, 1), padding="valid", activation="linear", name="conv4-1")
+        self.conv4_2 = L.Conv2D(2, kernel_size=(1, 1), strides=(1, 1), padding="valid", activation="linear")
 
 
