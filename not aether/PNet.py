@@ -48,3 +48,11 @@ class PNet(tf.keras.Model):
 
 
     def call(self, inputs):
+        num_layers = len(self.layers)
+        i = 0
+        while (i < num_layers - 1):
+            inputs = self.layers[i](inputs)
+            i += 1
+        regressions = self.conv4_1(inputs)
+        face = self.conv4_2(inputs)
+        return [regressions, face]
