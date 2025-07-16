@@ -37,4 +37,14 @@ class PNet(tf.keras.Model):
         self.conv4_1 = L.Conv2D(4, kernel_size=(1, 1), strides=(1, 1), padding="valid", activation="linear", name="conv4-1")
         self.conv4_2 = L.Conv2D(2, kernel_size=(1, 1), strides=(1, 1), padding="valid", activation="linear")
 
+        self.layers = (self.conv1, self.prelu1, self.maxpool1, self.conv2, self.prelu2, self.conv3, self.prelu3, self.conv4_1, self.conv4_2)
 
+
+    def construct(self, size):
+        curr_shape = size
+        for layer in self.layers:
+            layer.build(curr_shape)
+            curr_shape = layer.output_shape(size)
+
+
+    def call(self, inputs):
