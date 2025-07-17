@@ -18,6 +18,12 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
         event_file_name = file_list[i][0]
         event_bbox = face_bbx_list[i][0]
         event_dir = os.path.join(img_dir, str(i))
+
+        # Verify event directory exists
+        if not os.path.exists(event_dir):
+            print(f"Event directory not found: {event_dir}")
+            continue
+
         for j in range(len(event_file_name)):
             img_name = event_file_name[j][0][0]
             img_path = os.path.join(event_dir, f"{img_name}.jpg")
@@ -86,8 +92,10 @@ def train_pnet(model, images, targets, epochs=10, batch_size=32, learning_rate=0
 
 # Main execution
 if __name__ == "__main__":
-    mat_file_path = 'wider_face_train.mat'
-    img_dir = 'WIDER_train/images'  # Adjust to your image directory
+    mat_file_path = '/Users/sareenamann/AETHER/not aether/wider_face_split/wider_face_train.mat'
+    img_dir = '/Users/sareenamann/AETHER/not aether/WIDER_train/images'
+    #mat_file_path = 'wider_face_split/wider_face_train.mat'
+    #img_dir = 'WIDER_train/images'  # Adjust to your image directory
 
     images, targets = load_wider_face_data(mat_file_path, img_dir)
 
