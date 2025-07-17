@@ -39,6 +39,7 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
             orig_width, orig_height = img.size
             img = img.resize(img_size)
             img_array = np.array(img) / 255.0  # Normalize to [0, 1]
+            print(bbox_list)
 
             for bbox in bbox_list:
                 x1, y1, w, h = bbox
