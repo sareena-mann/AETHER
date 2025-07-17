@@ -4,6 +4,7 @@ import p
 import tensorflow as tf
 import os
 from PIL import Image
+import tensorflow.keras.losses
 
 
 def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
