@@ -4,6 +4,9 @@ import tensorflow as tf
     PNet is the first layer
     INPUT: image of any size
     OUTPUT: (1) Facial score (2) coordinates of a bounding box
+    [x1, y1, x2, y2]
+    [1,0]
+    [0,1]
 
     Conv1 + PReLU1 + MaxPool1: Extracts low-level features and downsamples.
     Conv2 + PReLU2: Extracts mid-level features.
@@ -12,7 +15,7 @@ import tensorflow as tf
     Conv4_2: Outputs classification scores (2 values per location).
 """
 
-L = tf.keras.Layers
+L = tf.keras.layers
 
 class PNet(tf.keras.Model):
 
@@ -40,7 +43,7 @@ class PNet(tf.keras.Model):
         self.layers = (self.conv1, self.prelu1, self.maxpool1, self.conv2, self.prelu2, self.conv3, self.prelu3, self.conv4_1, self.conv4_2)
 
 
-    def construct(self, size):
+    def construct(self, size=(None, None, None, 3)):
         curr_shape = size
         for layer in self.layers:
             layer.build(curr_shape)
