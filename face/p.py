@@ -40,21 +40,21 @@ class PNet(tf.keras.Model):
         self.conv4_1 = L.Conv2D(4, kernel_size=(1, 1), strides=(1, 1), padding="valid", activation="linear", name="conv4-1")
         self.conv4_2 = L.Conv2D(2, kernel_size=(1, 1), strides=(1, 1), padding="valid", activation="linear")
 
-        self.layers = (self.conv1, self.prelu1, self.maxpool1, self.conv2, self.prelu2, self.conv3, self.prelu3, self.conv4_1, self.conv4_2)
+        self.layers_list = (self.conv1, self.prelu1, self.maxpool1, self.conv2, self.prelu2, self.conv3, self.prelu3, self.conv4_1, self.conv4_2)
 
 
     def construct(self, size=(None, None, None, 3)):
         curr_shape = size
-        for layer in self.layers:
+        for layer in self.layers_list:
             layer.build(curr_shape)
-            curr_shape = layer.output_shape(size)
+            curr_shape = layer.compute_output_shape(size)
 
 
     def call(self, inputs):
-        num_layers = len(self.layers)
+        num_layers = len(self.layers_list)
         i = 0
         while (i < num_layers - 1):
-            inputs = self.layers[i](inputs)
+            inputs = self._list[i](inputs)
             i += 1
         regressions = self.conv4_1(inputs)
         face = self.conv4_2(inputs)

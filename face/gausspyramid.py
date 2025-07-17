@@ -4,7 +4,7 @@ import cv2
 
 # read image from train folder
 def readImage(imageName):
-    return cv2.imread("./not aether/"+imageName)
+    return cv2.imread("./face/"+imageName)
 
 # create folder to store results in
 def createFolder(name):
