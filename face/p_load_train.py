@@ -1,11 +1,11 @@
+from PIL.ImageDraw import ImageDraw
+from matplotlib import pyplot as plt
 from scipy.io import loadmat
 import numpy as np
 import p
 import tensorflow as tf
 import os
 from PIL import Image
-import tensorflow.keras.losses
-
 
 def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     mat_data = loadmat(mat_file_path)
@@ -20,7 +20,7 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     for i in range(len(file_list)):
         event_file_name = file_list[i][0]
         event_bbox = face_bbx_list[i][0]
-        event_name = event_list[i][0][0]  # e.g., '0--Parade'
+        event_name = event_list[i][0][0]  # ex:'0--Parade'
         event_dir = os.path.join(img_dir, event_name)
 
         # Verify event directory exists
@@ -36,7 +36,7 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
             img = Image.open(img_path).convert('RGB')
             orig_width, orig_height = img.size
             img = img.resize(img_size)
-            img_array = np.array(img) / 255.0  # Normalize to [0, 1]
+            img_array = np.array(img) / 255.0
 
             for bbox in bbox_list:
                 x1, y1, w, h = bbox
@@ -69,10 +69,12 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
 
 
 def bbox_loss(y_true, y_pred):
-    return tf.reduce_mean(tf.keras.losses.mean_squared_error(y_true, y_pred))
+    mse = tf.keras.losses.MeanSquaredError()
+    return mse(y_true, y_pred)
 
 def cls_loss(y_true, y_pred):
-    return tf.reduce_mean(tf.keras.losses.binary_crossentropy(y_true, tf.nn.softmax(y_pred)))
+    y_pred = tf.squeeze(y_pred, axis=[1, 2])  # Now shape = (N, 2)
+    return tf.reduce_mean(tf.keras.losses.binary_crossentropy(y_true, y_pred))
 
     # Training function
 def train_pnet(model, images, targets, epochs=10, batch_size=32, learning_rate=0.001):
@@ -97,8 +99,8 @@ def train_pnet(model, images, targets, epochs=10, batch_size=32, learning_rate=0
 if __name__ == "__main__":
     mat_file_path = '/Users/sareenamann/AETHER/face/wider_face_split/wider_face_train.mat'
     img_dir = '/Users/sareenamann/AETHER/face/WIDER_train/images'
-    #mat_file_path = '/Users/japjot/PycharmProjects/AETHER/face/wider_face_split/wider_face_train.mat'
-    #img_dir = '/Users/japjot/PycharmProjects/AETHER/face/WIDER_train/images'
+    # mat_file_path = '/Users/japjot/PycharmProjects/AETHER/face/wider_face_split/wider_face_train.mat'
+    # img_dir = '/Users/japjot/PycharmProjects/AETHER/face/WIDER_train/images'
     
     images, targets = load_wider_face_data(mat_file_path, img_dir)
 
