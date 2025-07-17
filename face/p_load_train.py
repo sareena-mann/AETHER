@@ -96,7 +96,9 @@ def train_pnet(model, images, targets, epochs=10, batch_size=32, learning_rate=0
 if __name__ == "__main__":
     mat_file_path = '/Users/sareenamann/AETHER/face/wider_face_split/wider_face_train.mat'
     img_dir = '/Users/sareenamann/AETHER/face/WIDER_train/images'
-
+    #mat_file_path = '/Users/japjot/PycharmProjects/AETHER/face/wider_face_split/wider_face_train.mat'
+    #img_dir = '/Users/japjot/PycharmProjects/AETHER/face/WIDER_train/images'
+    
     images, targets = load_wider_face_data(mat_file_path, img_dir)
 
     if images is not None:
