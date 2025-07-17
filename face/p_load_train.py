@@ -1,12 +1,16 @@
 from scipy.io import loadmat
 import numpy as np
-import PNet
+import p
 import tensorflow as tf
 import os
 from PIL import Image
 
+
 def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     mat_data = loadmat(mat_file_path)
+    print(mat_data.keys())
+
+
     file_list = mat_data['file_list']
     face_bbx_list = mat_data['face_bbx_list']
     event_list = mat_data['event_list']
@@ -94,15 +98,13 @@ def train_pnet(model, images, targets, epochs=10, batch_size=32, learning_rate=0
 
 # Main execution
 if __name__ == "__main__":
-    mat_file_path = '/face/wider_face_split/wider_face_train.mat'
+    mat_file_path = '/Users/sareenamann/AETHER/face/wider_face_split/wider_face_train.mat'
     img_dir = '/face/WIDER_train/images'
-    #mat_file_path = 'wider_face_split/wider_face_train.mat'
-    #img_dir = 'WIDER_train/images'  # Adjust to your image directory
 
     images, targets = load_wider_face_data(mat_file_path, img_dir)
 
     if images is not None:
-        pnet = PNet()
+        pnet = p.PNet()
         pnet.construct(size=(None, 12, 12, 3))
         history = train_pnet(pnet, images, targets)
 
