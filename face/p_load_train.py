@@ -58,9 +58,11 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     labels = np.array(labels, dtype=np.float32)
 
     # Reshape for PNet output: [batch, H_out, W_out, 4 or 2]
-    H_out, W_out = 3, 3  # Based on PNet architecture for 12x12 input
-    bboxes = bboxes.reshape(-1, H_out, W_out, 4)
-    labels = labels.reshape(-1, H_out, W_out, 2)
+    # H_out, W_out = 3, 3  # Based on PNet architecture for 12x12 input
+    # Convert lists to numpy arrays
+    images = np.array(images, dtype=np.float32)  # Shape: [N, 12, 12, 3]
+    bboxes = np.array(bboxes, dtype=np.float32)  # Shape: [N, H_out, W_out, 4]
+    labels = np.array(labels, dtype=np.float32)  # Shape: [N, H_out, W_out, 2]
 
     return images, [bboxes, labels]
 
@@ -88,8 +90,6 @@ def train_pnet(model, images, targets, epochs=10, batch_size=32, learning_rate=0
         batch_size=batch_size,
         validation_split=0.2,
         verbose=1)
-
-
     return history
 
 # Main execution
