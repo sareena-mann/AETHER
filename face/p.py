@@ -83,3 +83,7 @@ class PNet(tf.keras.Model):
         regressions = self.conv4_1(inputs)
         face = self.conv4_2(inputs)
         return [regressions, face]
+
+    def get_config(self):
+        config = super(PNet, self).get_config()
+        return config

@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from scipy.io import loadmat
 import numpy as np
 import p
+from p import PNet
 import tensorflow as tf
 import os
 from PIL import Image
@@ -16,6 +17,7 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     images = []
     bboxes = []
     labels = []
+    img_paths = []
 
     for i in range(len(file_list)):
         event_file_name = file_list[i][0]
@@ -53,6 +55,7 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
                 images.append(img_array)
                 bboxes.append(bbox_scaled)
                 labels.append([0, 1])
+                img_paths.append((img_path, orig_width, orig_height, [x1, y1, x2, y2]))
 
     images = np.array(images, dtype=np.float32)
     bboxes = np.array(bboxes, dtype=np.float32)
@@ -64,8 +67,10 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     images = np.array(images, dtype=np.float32)  # Shape: [N, 12, 12, 3]
     bboxes = np.array(bboxes, dtype=np.float32)  # Shape: [N, H_out, W_out, 4]
     labels = np.array(labels, dtype=np.float32)  # Shape: [N, H_out, W_out, 2]
+    bboxes = bboxes.reshape(-1, 1, 1, 4)
+    labels = labels.reshape(-1, 1, 1, 2)
 
-    return images, [bboxes, labels]
+    return images, [bboxes, labels], img_paths
 
 
 def bbox_loss(y_true, y_pred):
