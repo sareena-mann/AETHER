@@ -1,4 +1,8 @@
 import cv2
+from fontTools.misc.cython import returns
+
+from face.gausspyramid import createFolder, constructPyramids
+from face.p import PNet
 
 """
     Uses OpenCV to retrieve camera input
@@ -8,35 +12,86 @@ import cv2
     Projects bounding boxes on to captured image and onto feed
 """
 
+def processPyramidWithPNet(pyramid, model, ogShape):
+    all_boxes = []
+    all_scores = []
+
+    for i, img in enumerate(pyramid):
+        scale = ogShape[0] / img.shape[0]
+
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_in = img_rgb / 255.0
+        img_in = np.expand_dims(img_input, axis=0)
+
+        regressions, score = model(img_in)
+
+        regressions = regressions.numpy().squeeze()
+        score = score.numpy().squeeze()
+        scores = scores[:, :, 1]
+
+
+        stride = 2
+        cell_size = 12
+        score_mask = scores > 0.7
+        indices = np.where(score_mask)
+
+        boxes = []
+
+        for y, x in zip(indices[0], indices[1]):
+            reg = regressions[y, x]
+            score = scores[y, x]
+
+            # Map to original image coordinates
+            x1 = (x * stride) * scale
+            y1 = (y * stride) * scale
+            x2 = (x * stride + cell_size) * scale
+            y2 = (y * stride + cell_size) * scale
+
+            # Adjust with regressions
+            x1 += reg[0] * scale
+            y1 += reg[1] * scale
+            x2 += reg[2] * scale
+            y2 += reg[3] * scale
+
+            boxes.append([x1, y1, x2, y2])
+            all_scores.append(score)
+
+        all_boxes.extend(boxes)
+
+pnet = PNet()
+pnet.load_weights('model path')
 #Camera device index --> Video Capture Object
 device = 0
 source = cv2.VideoCapture(device)
+if not source.isOpened():
+    print("Could not open camera")
+    break
 
 win_name = 'Laptop Camera Input'
 cv2.namedWindow(win_name, cv2.WINDOW_AUTOSIZE)
+
+# Create folder for results
+folderName = './results/camera_feed_results'
+createFolder(folderName)
+createFolder(f"{folderName}/gaussian_pyramid")
+frame_count = 0
 
 while cv2.waitKey(1) != 27:  # Escape key
     has_frame, frame = source.read()
     if not has_frame:
         break
 
-    # Detections
-    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    image = cv2.flip(image, 1)
-    image.flags.writeable = False
-        # results = hands.process(image)
-        image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    pyramid = constructPyramids(gray_frame, f"frame_{frame_count}", folderName)
+    boxes, score = processPyramidWithPNet(pyramid, pnet, frame.shape[:2])
 
-        #results.multi_hand_landmarks gives x, y, z coordinates array of [axis: value]
-        if results.multi_hand_landmarks:
-            for num, hand in enumerate(results.multi_hand_landmarks):
-                #HAND_CONNECTIONS: [part of hand (i.e. wrist): another part]
-                mp_drawing.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS,
-                                          mp_drawing.DrawingSpec(color=(255, 0, 184), thickness=3, circle_radius=5),
-                                          mp_drawing.DrawingSpec(color=(250, 44, 250), thickness=2, circle_radius=3))
+    for box, score in zip(boxes, score):
+        x1, y1, x2, y2, = map(int, box)
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(frame, f"{score:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
-    cv2.imshow(win_name, image)
+    cv2.imshow(win_name, frame)
+    frame_count += 1
 
 source.release()
 cv2.destroyWindow(win_name)
