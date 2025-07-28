@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow.python.eager.context import set_log_device_placement
 
 """
     PNet is the first layer

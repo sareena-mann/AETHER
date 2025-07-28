@@ -1,5 +1,5 @@
 import cv2
-from fontTools.misc.cython import returns
+from fontTools.misc.cython import returnsimp
 
 from face.gausspyramid import createFolder, constructPyramids
 from face.p import PNet
