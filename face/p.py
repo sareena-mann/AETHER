@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow import keras
 
 """
     PNet is the first layer
@@ -33,6 +34,7 @@ conv4_2: Input (1, 1, 32) → Output (1, 1, 2) (for classification scores).
 
 L = tf.keras.layers
 
+@keras.saving.register_keras_serializable()
 class PNet(tf.keras.Model):
 
     # Instance
