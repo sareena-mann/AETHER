@@ -4,22 +4,22 @@ import cv2
 
 # read image from train folder
 def readImage(imageName):
-    return cv2.imread("./face/"+imageName)
+    image_path = os.path.join("/Users/sareenamann/AETHER/face/", imageName)
+    if not os.path.exists(image_path):  # CHANGED: Added check for file existence
+        raise FileNotFoundError(f"Error: Image file '{image_path}' does not exist")
+    image = cv2.imread(image_path)
+    if image is None:  # CHANGED: Added check for failed image loading
+        raise FileNotFoundError(f"Error: Could not load image '{image_path}'")
+    return image
 
 # create folder to store results in
 def createFolder(name):
+    print(f"Creating folder: {name}")
     if not os.path.exists(name):
         os.makedirs(name)
         print(f"Created folder with the name \"{name}\"")
     else:
         print(f"Folder \"{name}\" already exists!")
-#def createFolder(name):
-    #try:
-        #os.mkdir(name)
-        #print("Created folder with the name \"{}\"".format(name))
-        #return name
-    #except FileExistsError:
-        #print("Folder \"{}\" already exists!".format(name))
 
 def createResultFolders(imageName):
     name = "./results/"+imageName.split(".")[0]+"_results"
@@ -38,6 +38,7 @@ folderName = createResultFolders(imageName)
 
 # convert rgb to greyscale (if needed)
 def rgb2gray(image):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     r, g, b = image[:, :, 0], image[:, :, 1], image[:, :, 2]
     gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
     return gray
@@ -105,15 +106,18 @@ def constructPyramids(image, imageLabel, folderName, N=5):
     gaussianPath = folderName+"/gaussian_pyramid/"+imageLabel+"_gaussian_level_"
     laplacianPath = folderName+"/laplacian_pyramid/"+imageLabel+"_laplacian_level_"
     logPath = folderName+"/log_pyramid/"+imageLabel+"_log_level_"
+    pyramid = []
     for i in range(N):
         blurredLevelImage = gaussianBlur(levelImage)
         scaledDownLevelImage = scaleDownImage(blurredLevelImage)
-        cv2.imwrite(gaussianPath+str(i)+".jpg", scaledDownLevelImage)
+        pyramid.append(scaledDownLevelImage)
+        cv2.imwrite(gaussianPath + str(i) + ".jpg", scaledDownLevelImage)
         scaledUpLevelImage = scaleUpImage(scaledDownLevelImage)
         differenceImage = imageDifference(levelImage, scaledUpLevelImage)
-        cv2.imwrite(laplacianPath+str(i)+".jpg", differenceImage)
+        cv2.imwrite(laplacianPath + str(i) + ".jpg", differenceImage)
         logLevelImage = laplacian(blurredLevelImage)
-        cv2.imwrite(logPath+str(i)+".jpg", logLevelImage)
+        cv2.imwrite(logPath + str(i) + ".jpg", logLevelImage)
         levelImage = scaledDownLevelImage
+    return pyramid
 
 constructPyramids(greyImage, imageLabel, folderName)
