@@ -3,6 +3,8 @@ import numpy as np
 import os
 from face.gausspyramid import constructPyramids, createFolder
 from face.p import PNet
+import tensorflow as tf
+
 """
     Uses OpenCV to retrieve camera input
     Runs input through Guassian Pyramid -> 
@@ -58,9 +60,17 @@ def processPyramidWithPNet(pyramid, model, ogShape):
 
         all_boxes.extend(boxes)
     return all_boxes, all_scores
+"""
+pnet_path = os.path.join("/Users/sareenamann/AETHER/face/", "pnet_model.keras")
+pnet = tf.keras.models.load_model(pnet_path)
+"""
 
-pnet = PNet()
-pnet.load_weights('weights/pnet_weights.h5')
+pnet_path = "/Users/sareenamann/AETHER/face/pnet_model.keras"
+print(f"Checking PNet model file: {pnet_path}")
+print(f"PNet model exists: {os.path.exists(pnet_path)}")
+if not os.path.exists(pnet_path):
+    raise FileNotFoundError(f"Error: PNet model file '{pnet_path}' does not exist")
+pnet = tf.keras.models.load_model(pnet_path, custom_objects={'PNet': PNet})
 
 #Camera device index --> Video Capture Object
 device = 0
