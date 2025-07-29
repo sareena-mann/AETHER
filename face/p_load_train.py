@@ -70,7 +70,7 @@ def load_wider_face_data(mat_file_path, img_dir, img_size=(12, 12)):
     bboxes = bboxes.reshape(-1, 1, 1, 4)
     labels = labels.reshape(-1, 1, 1, 2)
 
-    return images, [bboxes, labels], img_paths
+    return images, [bboxes, labels]
 
 
 def bbox_loss(y_true, y_pred):
@@ -78,7 +78,7 @@ def bbox_loss(y_true, y_pred):
     return mse(y_true, y_pred)
 
 def cls_loss(y_true, y_pred):
-    y_pred = tf.squeeze(y_pred, axis=[1, 2])  # Now shape = (N, 2)
+    #y_pred = tf.squeeze(y_pred, axis=[1, 2])  # Now shape = (N, 2)
     return tf.reduce_mean(tf.keras.losses.binary_crossentropy(y_true, y_pred))
 
     # Training function
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         pnet.construct(size=(None, 12, 12, 3))
         history = train_pnet(pnet, images, targets)
 
-        pnet.save("pnet_model.keras")
-        print("Model training complete and saved as pnet_model.keras")
+        pnet.save("pnet_model.h5")
+        print("Model training complete and saved as pnet_model.h5")
     else:
         print("Failed to load data. Training aborted.")
