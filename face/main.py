@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import os
-import tensorflow as tf
 from face.gausspyramid import constructPyramids, createFolder
 from face.p import PNet
 import time
@@ -66,7 +65,7 @@ def processPyramidWithPNet(pyramid, model, ogShape):
 
 # Load PNet model from .h5 file
 pnet_path = "/Users/sareenamann/AETHER/face/pnet_model.h5"
-print(f"Checking PNet model file: {pnet_path}")
+
 print(f"PNet model exists: {os.path.exists(pnet_path)}")
 if not os.path.exists(pnet_path):
     raise FileNotFoundError(f"Error: PNet model file '{pnet_path}' does not exist")
@@ -97,8 +96,8 @@ if not source.isOpened():
         print("Error: Could not open any camera.")
         raise RuntimeError("Camera initialization failed")
 
-# Add initialization delay
-time.sleep(1)  # Wait 1 second to ensure camera is ready
+# Wait 1 second to ensure camera is ready
+time.sleep(1)
 
 win_name = 'Laptop Camera Input'
 cv2.namedWindow(win_name, cv2.WINDOW_AUTOSIZE)
@@ -112,19 +111,35 @@ frame_count = 0
 while True:
     has_frame, frame = source.read()
     print(f"Frame {frame_count} captured: {has_frame}")
-    if not has_frame:
-        print(f"Failed to capture frame {frame_count}. Retrying...")
-        continue
-
-    # Verify frame is valid
-    if frame is None or frame.size == 0:
-        print(f"Frame {frame_count} is invalid or empty.")
-        continue
 
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     pyramid = constructPyramids(gray_frame, f"frame_{frame_count}", folderName)
-    print(f"Pyramid generated with {len(pyramid)} levels")
     boxes, scores = processPyramidWithPNet(pyramid, pnet, frame.shape[:2])
+
+    # Apply NMS
+    if boxes and scores:
+        # Convert boxes to [x1, y1, x2, y2] format expected by NMS
+        boxes_array = np.array(boxes, dtype=np.float32)
+        scores_array = np.array(scores, dtype=np.float32)
+
+        # NMS parameters
+        conf_threshold = 0.8  # Minimum score to keep a box
+        nms_threshold = 0.3  # IoU threshold for NMS
+        indices = cv2.dnn.NMSBoxes(boxes_array.tolist(), scores_array.tolist(), conf_threshold, nms_threshold)
+
+        # Draw boxes that survive NMS
+        if len(indices) > 0:
+            for i in indices:
+                i = i[0] if isinstance(i, tuple) else i  # Handle different OpenCV versions
+                box = boxes_array[i]
+                score = scores_array[i]
+                x1, y1, x2, y2 = map(int, box)
+                x1, y1 = max(0, x1), max(0, y1)
+                x2, y2 = min(frame.shape[1], x2), min(frame.shape[0], y2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                text_y = max(10, y1 - 10)
+                cv2.putText(frame, f"{score:.2f}", (x1, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
 
     print(f"Frame {frame_count}: {len(boxes)} boxes detected")
     for box, score in zip(boxes, scores):
@@ -137,7 +152,7 @@ while True:
 
     cv2.imshow(win_name, frame)
     key = cv2.waitKey(30)  # Increased delay to 30ms for smoother display
-    if key == 27:  # Escape key
+    if key == 27: # Escape key
         break
 
     frame_count += 1
