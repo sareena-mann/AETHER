@@ -25,8 +25,8 @@ def createResultFolders(imageName):
     name = "./results/"+imageName.split(".")[0]+"_results"
     createFolder(name)
     createFolder(name+"/gaussian_pyramid")
-    createFolder(name+"/laplacian_pyramid")
-    createFolder(name+"/log_pyramid")
+    # createFolder(name+"/laplacian_pyramid")
+    # createFolder(name+"/log_pyramid")
     return name
 
 # image to test/run
@@ -58,8 +58,8 @@ gaussianKernel = np.array([[1, 2, 1],[ 2, 4, 2], [1, 2, 1]])
 gaussianScale = 16.0
 
 # array to convolve image with for laplace pyramid
-laplacianKernel = np.array([[0, 1, 0],[ 1, -4, 1], [0, 1, 0]])
-laplacianScale = 1.0
+# laplacianKernel = np.array([[0, 1, 0],[ 1, -4, 1], [0, 1, 0]])
+# laplacianScale = 1.0
 
 # convolution function (for gaussian pyramid and laplace pyramid, used in following functions with respective array)
 def convolve(image, imageFilter, scaleValue):
@@ -80,8 +80,10 @@ def convolve(image, imageFilter, scaleValue):
 def gaussianBlur(image):
     return convolve(image, gaussianKernel, gaussianScale)
 
+"""
 def laplacian(image):
     return convolve(image, laplacianKernel, laplacianScale)
+"""
 
 # changes the size of image (to reduce pixels, smaller blurred with fewer pixels and larger high resolution with more pixels images)
 def scaleDownImage(image):
@@ -104,8 +106,8 @@ def imageDifference(image_1, image_2):
 def constructPyramids(image, imageLabel, folderName, N=5):
     levelImage = image
     gaussianPath = folderName+"/gaussian_pyramid/"+imageLabel+"_gaussian_level_"
-    laplacianPath = folderName+"/laplacian_pyramid/"+imageLabel+"_laplacian_level_"
-    logPath = folderName+"/log_pyramid/"+imageLabel+"_log_level_"
+    # laplacianPath = folderName+"/laplacian_pyramid/"+imageLabel+"_laplacian_level_"
+    # logPath = folderName+"/log_pyramid/"+imageLabel+"_log_level_"
     pyramid = []
     for i in range(N):
         blurredLevelImage = gaussianBlur(levelImage)
@@ -114,9 +116,9 @@ def constructPyramids(image, imageLabel, folderName, N=5):
         cv2.imwrite(gaussianPath + str(i) + ".jpg", scaledDownLevelImage)
         scaledUpLevelImage = scaleUpImage(scaledDownLevelImage)
         differenceImage = imageDifference(levelImage, scaledUpLevelImage)
-        cv2.imwrite(laplacianPath + str(i) + ".jpg", differenceImage)
-        logLevelImage = laplacian(blurredLevelImage)
-        cv2.imwrite(logPath + str(i) + ".jpg", logLevelImage)
+        # cv2.imwrite(laplacianPath + str(i) + ".jpg", differenceImage)
+        # logLevelImage = laplacian(blurredLevelImage)
+        # cv2.imwrite(logPath + str(i) + ".jpg", logLevelImage)
         levelImage = scaledDownLevelImage
     return pyramid
 
