@@ -5,10 +5,10 @@ import cv2
 # read image from train folder
 def readImage(imageName):
     image_path = os.path.join("/Users/sareenamann/AETHER/face/", imageName)
-    if not os.path.exists(image_path):  # CHANGED: Added check for file existence
+    if not os.path.exists(image_path):
         raise FileNotFoundError(f"Error: Image file '{image_path}' does not exist")
     image = cv2.imread(image_path)
-    if image is None:  # CHANGED: Added check for failed image loading
+    if image is None:
         raise FileNotFoundError(f"Error: Could not load image '{image_path}'")
     return image
 
@@ -29,13 +29,6 @@ def createResultFolders(imageName):
     # createFolder(name+"/log_pyramid")
     return name
 
-# image to test/run
-# imageName = "your_image_name"
-imageName="image1.jpg"
-image = readImage(imageName)
-imageLabel = imageName.split(".")[0]
-folderName = createResultFolders(imageName)
-
 # convert rgb to greyscale (if needed)
 def rgb2gray(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -50,16 +43,6 @@ def convert2GrayScaleIfNeeded(image):
     else:
         print("Returning already Grayscale image!")
         return image
-
-greyImage = convert2GrayScaleIfNeeded(image)
-
-# array to convolve image with for gaussian pyramid
-gaussianKernel = np.array([[1, 2, 1],[ 2, 4, 2], [1, 2, 1]])
-gaussianScale = 16.0
-
-# array to convolve image with for laplace pyramid
-# laplacianKernel = np.array([[0, 1, 0],[ 1, -4, 1], [0, 1, 0]])
-# laplacianScale = 1.0
 
 # convolution function (for gaussian pyramid and laplace pyramid, used in following functions with respective array)
 def convolve(image, imageFilter, scaleValue):
@@ -77,13 +60,11 @@ def convolve(image, imageFilter, scaleValue):
     blurredImage = np.array(blurredList).reshape(image.shape)
     return blurredImage
 
+gaussianKernel = np.array([[1, 2, 1],[ 2, 4, 2], [1, 2, 1]])
+gaussianScale = 16.0
+
 def gaussianBlur(image):
     return convolve(image, gaussianKernel, gaussianScale)
-
-"""
-def laplacian(image):
-    return convolve(image, laplacianKernel, laplacianScale)
-"""
 
 # changes the size of image (to reduce pixels, smaller blurred with fewer pixels and larger high resolution with more pixels images)
 def scaleDownImage(image):
@@ -106,8 +87,7 @@ def imageDifference(image_1, image_2):
 def constructPyramids(image, imageLabel, folderName, N=5):
     levelImage = image
     gaussianPath = folderName+"/gaussian_pyramid/"+imageLabel+"_gaussian_level_"
-    # laplacianPath = folderName+"/laplacian_pyramid/"+imageLabel+"_laplacian_level_"
-    # logPath = folderName+"/log_pyramid/"+imageLabel+"_log_level_"
+
     pyramid = []
     for i in range(N):
         blurredLevelImage = gaussianBlur(levelImage)
@@ -116,10 +96,5 @@ def constructPyramids(image, imageLabel, folderName, N=5):
         cv2.imwrite(gaussianPath + str(i) + ".jpg", scaledDownLevelImage)
         scaledUpLevelImage = scaleUpImage(scaledDownLevelImage)
         differenceImage = imageDifference(levelImage, scaledUpLevelImage)
-        # cv2.imwrite(laplacianPath + str(i) + ".jpg", differenceImage)
-        # logLevelImage = laplacian(blurredLevelImage)
-        # cv2.imwrite(logPath + str(i) + ".jpg", logLevelImage)
         levelImage = scaledDownLevelImage
     return pyramid
-
-constructPyramids(greyImage, imageLabel, folderName)
